@@ -1,0 +1,40 @@
+{
+  "name": "medicare-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "axios": "^1.18.1",
+    "better-auth": "^1.6.23",
+    "cors": "^2.8.6",
+    "cuid": "^3.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "pg": "^8.22.0",
+    "postgresql": "^0.0.1",
+    "prisma": "^7.8.0"
+  },
+  "scripts": {
+    "start": "nodemon index.js",
+    "dev": "node index.js",
+    "migrate": "prisma migrate dev",
+    "migrate:reset": "prisma migrate reset",
+    "studio": "prisma studio",
+    "generate": "prisma generate",
+    "db:push": "prisma db push",
+    "test": "node test-db.js",
+    "seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "devDependencies": {
+    "eslint": "^10.7.0",
+    "eslint-plugin-import": "^2.32.0",
+    "nodemon": "^3.1.14"
+  }
+}
