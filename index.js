@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.json({
     status: 'OK',
-    message: 'StayNest API is running',
+    message: 'MiCare API is running',
     timestamp: new Date().toISOString(),
   });
 });
