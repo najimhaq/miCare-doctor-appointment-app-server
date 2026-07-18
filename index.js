@@ -6,6 +6,7 @@ import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
+import uploadRouter from './router/upload.routes.js';
 
 
 const app = express();
@@ -34,9 +35,11 @@ app.get('/', (req, res) => {
 });
 
 // Custom routes
-// app.use("/api/doctors", doctorRoutes);
-// app.use("/api/appointments", appointmentRoutes);
-// app.use("/api/patients", patientRoutes);
+app.use('/api/upload', uploadRouter);
+// app.use('/api', userRouter);
+
+// app.use('/api/admin', adminRouter);
+// app.use('/api/token', authRouter);
 
 
 app.use((req, res) => {

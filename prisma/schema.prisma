@@ -90,11 +90,14 @@ model Account {
   userId               String
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accountId            String
-  providerId           String    // "google", "facebook", "credential"
+  providerId           String    // "google", "github", "credential"
+  password             String?   // ✅ এটা যুক্ত করুন — credential login-এর hashed password
   accessToken          String?
   refreshToken         String?
   idToken              String?
-  expiresAt            DateTime?
+  accessTokenExpiresAt DateTime? // ✅ Better Auth-এর জন্য standard field নাম
+  refreshTokenExpiresAt DateTime? // ✅ যুক্ত করা ভালো
+  scope                String?   // ✅ social login scope সেভ করতে পারে
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }
