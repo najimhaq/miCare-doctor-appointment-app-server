@@ -2,7 +2,6 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
@@ -21,6 +20,7 @@ app.use(
   })
 );
 
+
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
 app.use(express.json());
@@ -37,7 +37,6 @@ app.get('/', (req, res) => {
 // Custom routes
 app.use('/api/upload', uploadRouter);
 // app.use('/api', userRouter);
-
 // app.use('/api/admin', adminRouter);
 // app.use('/api/token', authRouter);
 

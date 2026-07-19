@@ -23,53 +23,7 @@ model User {
   accounts      Account[]
   doctorProfile DoctorProfile?
   appointments  Appointment[] @relation("PatientAppointments")
-}
-
-enum Role {
-  PATIENT
-  DOCTOR
-  ADMIN
-}
-
-model DoctorProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
-  specialization  String
-  qualifications  String
-  experience      Int      // years
-  consultationFee Float
-  bio             String?
-  availableDays   String[] // ["Monday", "Wednesday", "Friday"]
-  availableSlots  String[] // ["09:00", "10:00", "11:00"]
-  isVerified      Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  appointments    Appointment[]
-}
-
-model Appointment {
-  id          String            @id @default(cuid())
-  patientId   String
-  doctorId    String
-  date        DateTime
-  timeSlot    String            // "10:00 AM"
-  status      AppointmentStatus @default(PENDING)
-  reason      String?
-  notes       String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  patient     User          @relation("PatientAppointments", fields: [patientId], references: [id])
-  doctor      DoctorProfile @relation(fields: [doctorId], references: [id])
-}
-
-enum AppointmentStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
+  reviews       Review[]     @relation("PatientReviews")
 }
 
 // Better Auth এর জন্য দরকারি tables
@@ -90,14 +44,14 @@ model Account {
   userId               String
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accountId            String
-  providerId           String    // "google", "github", "credential"
-  password             String?   // ✅ এটা যুক্ত করুন — credential login-এর hashed password
+  providerId           String    // "google", "github"
+  password             String?
   accessToken          String?
   refreshToken         String?
   idToken              String?
-  accessTokenExpiresAt DateTime? // ✅ Better Auth-এর জন্য standard field নাম
-  refreshTokenExpiresAt DateTime? // ✅ যুক্ত করা ভালো
-  scope                String?   // ✅ social login scope সেভ করতে পারে
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }
@@ -109,4 +63,176 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+
+// ============================================
+// 🩺 DOCTOR & APPOINTMENT MODELS
+// ============================================
+
+model DoctorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Professional Info
+  specialization  String
+  qualification   String?
+  experience      Int      // in years
+  consultationFee Float
+  bio             String?  @db.Text
+  chamberAddress  String?
+  phone           String?
+
+  // Stats (Auto-calculated)
+  totalPatients   Int      @default(0)
+  averageRating   Float    @default(0)
+  totalReviews    Int      @default(0)
+  isAvailable     Boolean  @default(true)
+
+  // Relations
+  schedules       Schedule[]
+  appointments    Appointment[]
+  reviews         Review[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([specialization])
+  @@index([isAvailable])
+}
+
+model Schedule {
+  id          String       @id @default(cuid())
+  doctorId    String
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  dayOfWeek   DayOfWeek    // MONDAY, TUESDAY, etc.
+  startTime   String       // "09:00"
+  endTime     String       // "17:00"
+  slotDuration Int         // in minutes (e.g., 30)
+  maxPatients Int          // max patients per slot
+
+  isActive    Boolean      @default(true)
+
+  timeSlots   TimeSlot[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([doctorId, dayOfWeek])
+}
+
+model TimeSlot {
+  id          String            @id @default(cuid())
+  scheduleId  String
+  schedule    Schedule          @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  date        DateTime          @db.Date
+  startTime   String            // "09:00"
+  endTime     String            // "10:00"
+  status      TimeSlotStatus    @default(AVAILABLE)
+
+  appointment Appointment?
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([scheduleId, date, startTime])
+  @@index([date, status])
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+
+  // Relations
+  patientId   String
+  patient     User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId    String
+  doctor      DoctorProfile     @relation(fields: [doctorId], references: [id])
+  timeSlotId  String            @unique
+  timeSlot    TimeSlot          @relation(fields: [timeSlotId], references: [id])
+
+  // Appointment Details
+  appointmentDate DateTime      @db.Date
+  startTime       String
+  endTime         String
+  status          AppointmentStatus @default(PENDING)
+
+  // Additional Info
+  reason        String?         @db.Text
+  notes         String?         @db.Text
+  prescription  String?         @db.Text
+
+  // Payment
+  fee           Float
+  paymentStatus PaymentStatus   @default(UNPAID)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([patientId, status])
+  @@index([doctorId, appointmentDate])
+  @@index([appointmentDate, status])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+
+  patientId   String
+  patient     User     @relation("PatientReviews", fields: [patientId], references: [id])
+  doctorId    String
+  doctor      DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  rating      Int
+  comment     String?  @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([patientId, doctorId])
+  @@index([doctorId, rating])
+}
+
+// ============================================
+// 📊 ENUMS
+// ============================================
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum DayOfWeek {
+  SATURDAY
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+enum TimeSlotStatus {
+  AVAILABLE
+  BOOKED
+  CANCELLED
+  UNAVAILABLE
+}
+
+enum AppointmentStatus {
+  PENDING      // Doctor hasn't confirmed yet
+  CONFIRMED    // Doctor confirmed
+  IN_PROGRESS  // Consultation ongoing
+  COMPLETED    // Done
+  CANCELLED    // Cancelled by patient/doctor
+  NO_SHOW      // Patient didn't show up
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+  FAILED
 }
