@@ -1,12 +1,9 @@
-// backend/prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ==================== CORE USER MODELS ====================
@@ -30,7 +27,6 @@ model User {
   adminProfile     Admin?
   accounts         Account[]
   sessions         Session[]
-  appointmentsAsPatient Appointment[] @relation("PatientAppointments")
   notifications    Notification[]
   reviewsGiven     Review[] @relation("Reviewer")
   auditLogs        AuditLog[]
@@ -143,6 +139,9 @@ model Doctor {
   experienceYears Int      @default(0)
   about           String?  @db.Text
   consultationFee Decimal  @default(0)
+  image           String?
+  hospital        String?
+  location        String?
   rating          Float    @default(0)
   totalReviews    Int      @default(0)
   isApproved      Boolean  @default(false)
