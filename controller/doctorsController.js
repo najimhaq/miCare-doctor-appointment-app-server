@@ -1,23 +1,48 @@
 // controllers/doctorController.js
-
-
 import prisma from '../lib/prisma.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
-
 export const getDoctors = asyncHandler(async (req, res) => {
-  const doctors = await prisma.doctor.findMany({
-    where: { isApproved: true },
-    include: {
-      user: {
-        select: { name: true, email: true, image: true },
-      },
-      schedules: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 9;
+  const skip = (page - 1) * limit;
+  const search = req.query.search || '';
+  const specialty = req.query.specialty || '';
 
-  res.status(200).json({ success: true, count: doctors.length, data: doctors });
+  const where = {
+    isApproved: true,
+    ...(specialty && { specialization: specialty }),
+    ...(search && {
+      OR: [
+        { specialization: { contains: search, mode: 'insensitive' } },
+        { user: { name: { contains: search, mode: 'insensitive' } } },
+      ],
+    }),
+  };
+
+  const [doctors, total] = await prisma.$transaction([
+    prisma.doctor.findMany({
+      where,
+      include: { user: { select: { name: true, email: true, image: true } }, schedules: true },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.doctor.count({ where }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: doctors,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+    },
+  });
 });
 
 export const getDoctorById = asyncHandler(async (req, res) => {
@@ -28,7 +53,9 @@ export const getDoctorById = asyncHandler(async (req, res) => {
   });
 
   if (!doctor) {
-    return res.status(404).json({ success: false, message: 'Doctor not found' });
+    return res
+      .status(404)
+      .json({ success: false, message: 'Doctor not found' });
   }
   res.status(200).json({ success: true, data: doctor });
 });
@@ -65,5 +92,3 @@ export const getDoctorProfile = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, data: doctor });
 });
-
-

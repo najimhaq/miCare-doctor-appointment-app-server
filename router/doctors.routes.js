@@ -2,9 +2,9 @@ import express from 'express';
 
 const doctorRouter = express.Router();
 
-import { getDoctors, getSingleDoctor } from '../controller/doctors.controller.js';
+import { getDoctors, getDoctorById } from '../controller/doctorsController.js';
 
 doctorRouter.get('/', getDoctors);
-doctorRouter.get('/:id', getSingleDoctor);
+doctorRouter.get('/:id', getDoctorById);
 
 export default doctorRouter;
