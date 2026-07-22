@@ -7,19 +7,46 @@ import { auth } from './lib/auth.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
 import uploadRouter from './router/upload.routes.js';
 import doctorRouter from './router/doctors.routes.js';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// ✅ Security Middleware
 app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: false,
+    hsts: process.env.NODE_ENV === 'production' ? { maxAge: 31536000 } : false,
   })
 );
 
+// ✅ Compression
+app.use(compression());
+
+// ✅ CORS - Production ready
+const corsOptions = {
+  origin: process.env.NEXT_PUBLIC_API_FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'],
+  maxAge: 86400, // 24 hours
+};
+app.use(cors(corsOptions));
+
+// ✅ Rate Limiting (প্রোডাকশনে জরুরি)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', limiter);
+
+// ✅ Better Auth
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
 app.use(express.json());
@@ -30,26 +57,33 @@ app.get('/', (req, res) => {
     status: 'OK',
     message: 'MiCare API is running',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    uptime: process.uptime(),
   });
 });
 
 // Custom routes
 app.use('/api/upload', uploadRouter);
 app.use('/api/doctors', doctorRouter);
-// app.use('/api', userRouter);
-// app.use('/api/admin', adminRouter);
-// app.use('/api/token', authRouter);
 
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'No Route Found',
+    message: `Route ${req.originalUrl} not found`,
   });
 });
 
 app.use(errorMiddleware);
 
+// ✅ Graceful Shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📝 API Base URL: http://localhost:${PORT}/api`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📡 Health: http://localhost:${PORT}/api/health`);
+  console.log(`🔐 Auth: http://localhost:${PORT}/api/auth`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

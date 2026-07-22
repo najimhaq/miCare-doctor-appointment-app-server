@@ -3,7 +3,8 @@ const errorMiddleware = (err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Server Error',
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
 export default errorMiddleware;
