@@ -47,6 +47,7 @@ export const getDoctors = asyncHandler(async (req, res) => {
 });
 
 // Get single doctor by ID
+// controllers/doctorController.js
 export const getDoctorById = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,14 +56,9 @@ export const getDoctorById = asyncHandler(async (req, res) => {
       where: { id },
       include: {
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
+          select: { id: true, name: true, email: true, image: true },
         },
-        schedules: true, // DoctorSchedule relation, actual availability
+        schedules: true,
         _count: {
           select: { appointments: true },
         },
@@ -86,10 +82,10 @@ export const getDoctorById = asyncHandler(async (req, res) => {
       hospital: doctor.hospital,
       location: doctor.location,
       about: doctor.about,
-      consultationFee: doctor.consultationFee,
+      consultationFee: Number(doctor.consultationFee), // Decimal → Number
       image: doctor.image,
       schedules: doctor.schedules || [],
-      rating: doctor.rating ?? 0,
+      rating: Number(doctor.rating ?? 0),
       totalReviews: doctor.totalReviews ?? 0,
       isApproved: doctor.isApproved,
       patientsCount: doctor._count?.appointments || 0,
@@ -106,6 +102,55 @@ export const getDoctorById = asyncHandler(async (req, res) => {
       message: 'Failed to fetch doctor details',
     });
   }
+});
+
+// ✅ নতুন: নির্দিষ্ট তারিখের জন্য available time slots বের করা
+export const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { date } = req.query; // "2026-07-25"
+
+  if (!date) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Date is required' });
+  }
+
+  const dayOfWeek = new Date(date).getDay(); // 0=Sunday, 1=Monday...
+
+  const schedule = await prisma.doctorSchedule.findFirst({
+    where: { doctorId: id, dayOfWeek, isAvailable: true },
+  });
+
+  if (!schedule) {
+    return res.status(200).json({ success: true, data: [] }); // ওই দিন doctor available না
+  }
+
+  // ওই তারিখের বুক করা appointments বের করা
+  const bookedAppointments = await prisma.appointment.findMany({
+    where: {
+      doctorId: id,
+      appointmentDate: new Date(date),
+      status: { in: ['PENDING', 'CONFIRMED'] },
+    },
+    select: { startTime: true },
+  });
+  const bookedTimes = bookedAppointments.map((a) => a.startTime);
+
+  // Slot generate করা
+  const slots = [];
+  let current = new Date(`2000-01-01T${schedule.startTime}`);
+  const endTime = new Date(`2000-01-01T${schedule.endTime}`);
+  const duration = schedule.slotDuration || 30;
+
+  while (current < endTime) {
+    const timeStr = current.toTimeString().slice(0, 5);
+    if (!bookedTimes.includes(timeStr)) {
+      slots.push(timeStr);
+    }
+    current.setMinutes(current.getMinutes() + duration);
+  }
+
+  res.status(200).json({ success: true, data: slots });
 });
 
 // Get doctor profile

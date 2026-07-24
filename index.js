@@ -10,6 +10,7 @@ import doctorRouter from './router/doctors.routes.js';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import appointmentRoutes from './router/appointmentRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -63,9 +64,9 @@ app.get('/', (req, res) => {
 });
 
 // Custom routes
+app.use('/api/appointments', appointmentRoutes);
 app.use('/api/upload', uploadRouter);
 app.use('/api/doctors', doctorRouter);
-
 
 app.use((req, res) => {
   res.status(404).json({
