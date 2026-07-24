@@ -45,19 +45,66 @@ export const getDoctors = asyncHandler(async (req, res) => {
   });
 });
 
+// Get single doctor by ID
 export const getDoctorById = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const doctor = await prisma.doctor.findUnique({
-    where: { id },
-    include: { user: true, schedules: true, reviews: true },
-  });
+  try {
+    const { id } = req.params;
 
-  if (!doctor) {
-    return res
-      .status(404)
-      .json({ success: false, message: 'Doctor not found' });
+    const doctor = await prisma.doctor.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        schedules: true, // DoctorSchedule relation, actual availability
+        _count: {
+          select: { appointments: true },
+        },
+      },
+    });
+
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Doctor not found',
+      });
+    }
+
+    const formattedDoctor = {
+      id: doctor.id,
+      user: doctor.user,
+      specialization: doctor.specialization,
+      qualifications: doctor.qualifications,
+      experienceYears: doctor.experienceYears,
+      licenseNumber: doctor.licenseNumber,
+      hospital: doctor.hospital,
+      location: doctor.location,
+      about: doctor.about,
+      consultationFee: doctor.consultationFee,
+      image: doctor.image,
+      schedules: doctor.schedules || [],
+      rating: doctor.rating ?? 0,
+      totalReviews: doctor.totalReviews ?? 0,
+      isApproved: doctor.isApproved,
+      patientsCount: doctor._count?.appointments || 0,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: formattedDoctor,
+    });
+  } catch (error) {
+    console.error('Error fetching doctor:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch doctor details',
+    });
   }
-  res.status(200).json({ success: true, data: doctor });
 });
 
 export const getDoctorProfile = asyncHandler(async (req, res) => {
