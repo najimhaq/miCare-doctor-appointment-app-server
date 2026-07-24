@@ -65,7 +65,7 @@ app.get('/', (req, res) => {
 // Custom routes
 app.use('/api/upload', uploadRouter);
 app.use('/api/doctors', doctorRouter);
-app.use('/api/doctors/:id', doctorRouter);
+
 
 app.use((req, res) => {
   res.status(404).json({

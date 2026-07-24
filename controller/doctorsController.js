@@ -2,6 +2,7 @@
 import prisma from '../lib/prisma.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
+// Get all doctors
 export const getDoctors = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 9;
@@ -107,6 +108,7 @@ export const getDoctorById = asyncHandler(async (req, res) => {
   }
 });
 
+// Get doctor profile
 export const getDoctorProfile = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -138,4 +140,15 @@ export const getDoctorProfile = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({ success: true, data: doctor });
+});
+
+// Get all specialties
+export const getDoctorSpecialties = asyncHandler(async (req, res) => {
+  const result = await prisma.doctor.findMany({
+    where: { isApproved: true },
+    select: { specialization: true },
+    distinct: ['specialization'],
+  });
+  const specialties = result.map((d) => d.specialization).filter(Boolean);
+  res.status(200).json({ success: true, data: specialties });
 });
