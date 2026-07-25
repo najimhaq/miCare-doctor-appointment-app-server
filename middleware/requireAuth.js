@@ -41,3 +41,23 @@ export const requireAuth = async (req, res, next) => {
     });
   }
 };
+
+export const requireDoctor = async (req, res, next) => {
+  if (!req.user?.doctorProfile) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied - Doctor account required',
+    });
+  }
+  next();
+};
+
+export const requirePatient = async (req, res, next) => {
+  if (!req.user?.patientProfile) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied - Patient account required',
+    });
+  }
+  next();
+};

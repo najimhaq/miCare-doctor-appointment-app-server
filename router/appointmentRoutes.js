@@ -1,6 +1,6 @@
 // routes/appointmentRoutes.js
 import express from 'express';
-import { requireAuth } from '../middleware/requireAuth.js';
+import { requireAuth, requireDoctor, requirePatient } from '../middleware/requireAuth.js';
 import {
   bookAppointment,
   getMyAppointments,
@@ -8,15 +8,32 @@ import {
   updateAppointment,
   cancelAppointment,
   restoreAppointment,
+  getDoctorAppointments,
+  updateAppointmentStatus,
 } from '../controller/appointmentController.js';
 
 const appointmentRoutes = express.Router();
 
-appointmentRoutes.get('/:id/available-slots', getAvailableSlots);
-appointmentRoutes.get('/my-appointments', requireAuth, getMyAppointments);
-appointmentRoutes.patch('/:id', requireAuth, updateAppointment);
-appointmentRoutes.delete('/:id', requireAuth, cancelAppointment);
-appointmentRoutes.patch('/:id/restore', requireAuth, restoreAppointment);
-appointmentRoutes.post('/book', requireAuth, bookAppointment);
+//patient routes
+appointmentRoutes.get('/:id/available-slots',requireAuth, requirePatient, getAvailableSlots);
+appointmentRoutes.get('/my-appointments', requireAuth, requirePatient, getMyAppointments);
+appointmentRoutes.patch('/:id', requireAuth, requirePatient, updateAppointment);
+appointmentRoutes.delete('/:id', requireAuth, requirePatient, cancelAppointment);
+appointmentRoutes.patch('/:id/restore', requireAuth, requirePatient, restoreAppointment);
+appointmentRoutes.post('/book', requireAuth, requirePatient, bookAppointment);
+
+//Doctor routes
+appointmentRoutes.get(
+  '/doctor/history',
+  requireAuth,
+  requireDoctor,
+  getDoctorAppointments
+);
+appointmentRoutes.patch(
+  '/:id/status',
+  requireAuth,
+  requireDoctor,
+  updateAppointmentStatus
+);
 
 export default appointmentRoutes;

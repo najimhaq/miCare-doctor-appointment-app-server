@@ -459,3 +459,87 @@ export const restoreAppointment = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, message: 'Appointment restored', data: restored });
 });
+
+
+//!for doctor appointment - start
+export const getDoctorAppointments = asyncHandler(async (req, res) => {
+  const doctorId = req.user.doctorProfile.id;
+  const { status, date, page = 1, limit = 10 } = req.query;
+
+  const where = { doctorId };
+
+  if (status && status !== 'ALL') {
+    where.status = status;
+  }
+
+  if (date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    where.appointmentDate = { gte: start, lte: end };
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [appointments, total] = await Promise.all([
+    prisma.appointment.findMany({
+      where,
+      include: {
+        patient: { include: { user: { select: { name: true, image: true, email: true } } } },
+        payment: true,
+      },
+      orderBy: { appointmentDate: 'desc' },
+      skip,
+      take: Number(limit),
+    }),
+    prisma.appointment.count({ where }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: appointments,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+      hasNextPage: skip + appointments.length < total,
+      hasPrevPage: Number(page) > 1,
+    },
+  });
+});
+
+// updateAppointmentStatus - for doctor
+export const updateAppointmentStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const doctorId = req.user.doctorProfile.id; // ✅
+
+  const VALID_STATUSES = ['CONFIRMED', 'COMPLETED', 'NO_SHOW', 'CANCELLED_BY_DOCTOR'];
+  if (!VALID_STATUSES.includes(status)) {
+    return res.status(400).json({ success: false, message: 'Invalid status' });
+  }
+
+  const appointment = await prisma.appointment.findUnique({ where: { id } });
+  if (!appointment || appointment.doctorId !== doctorId) {
+    return res.status(404).json({ success: false, message: 'Appointment not found' });
+  }
+
+  const updated = await prisma.appointment.update({
+    where: { id },
+    data: { status },
+  });
+
+  const patient = await prisma.patient.findUnique({ where: { id: appointment.patientId } });
+  await prisma.notification.create({
+    data: {
+      userId: patient.userId,
+      title: 'Appointment Update',
+      message: `Your appointment status changed to ${status.replaceAll('_', ' ')}`,
+      type: 'APPOINTMENT',
+    },
+  });
+
+  res.status(200).json({ success: true, message: 'Status updated', data: updated });
+});
