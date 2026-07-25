@@ -30,7 +30,7 @@ app.use(compression());
 const corsOptions = {
   origin: process.env.NEXT_PUBLIC_API_FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   exposedHeaders: ['Set-Cookie'],
   maxAge: 86400, // 24 hours

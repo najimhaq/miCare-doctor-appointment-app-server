@@ -110,7 +110,7 @@ export const getDoctorById = asyncHandler(async (req, res) => {
 // ✅ নতুন: নির্দিষ্ট তারিখের জন্য available time slots বের করা
 export const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { date } = req.query; // "2026-07-25"
+  const { date } = req.query;
 
   if (!date) {
     return res
@@ -118,17 +118,16 @@ export const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
       .json({ success: false, message: 'Date is required' });
   }
 
-  const dayOfWeek = new Date(date).getDay(); // 0=Sunday, 1=Monday...
+  const dayOfWeek = new Date(date).getDay();
 
   const schedule = await prisma.doctorSchedule.findFirst({
     where: { doctorId: id, dayOfWeek, isAvailable: true },
   });
 
   if (!schedule) {
-    return res.status(200).json({ success: true, data: [] }); // ওই দিন doctor available না
+    return res.status(200).json({ success: true, data: [] });
   }
 
-  // ওই তারিখের বুক করা appointments বের করা
   const bookedAppointments = await prisma.appointment.findMany({
     where: {
       doctorId: id,
@@ -139,16 +138,31 @@ export const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
   });
   const bookedTimes = bookedAppointments.map((a) => a.startTime);
 
-  // Slot generate করা
+  function to24Hour(timeStr) {
+    const [time, modifier] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':');
+    hours = parseInt(hours, 10);
+    if (modifier === 'PM' && hours !== 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${minutes}`;
+  }
+
   const slots = [];
-  let current = new Date(`2000-01-01T${schedule.startTime}`);
-  const endTime = new Date(`2000-01-01T${schedule.endTime}`);
+  let current = new Date(`2000-01-01T${to24Hour(schedule.startTime)}:00`);
+  const endTime = new Date(`2000-01-01T${to24Hour(schedule.endTime)}:00`);
   const duration = schedule.slotDuration || 30;
 
   while (current < endTime) {
-    const timeStr = current.toTimeString().slice(0, 5);
-    if (!bookedTimes.includes(timeStr)) {
-      slots.push(timeStr);
+    const hh = String(current.getHours()).padStart(2, '0');
+    const mm = String(current.getMinutes()).padStart(2, '0');
+    const time24 = `${hh}:${mm}`;
+
+    const hour12 = current.getHours() % 12 || 12;
+    const ampm = current.getHours() >= 12 ? 'PM' : 'AM';
+    const displaySlot = `${String(hour12).padStart(2, '0')}:${mm} ${ampm}`;
+
+    if (!bookedTimes.includes(time24) && !bookedTimes.includes(displaySlot)) {
+      slots.push(displaySlot);
     }
     current.setMinutes(current.getMinutes() + duration);
   }

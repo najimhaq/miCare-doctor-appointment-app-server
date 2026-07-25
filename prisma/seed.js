@@ -57,24 +57,38 @@ async function main() {
       },
     });
 
-    for (const slot of doc.availability) {
-      const [startTime, endTime] = slot.split(' - ');
-      await prisma.doctorSchedule.upsert({
-        where: {
-          doctorId_dayOfWeek_startTime: {
-            doctorId: doctor.id,
-            dayOfWeek: 1,
-            startTime,
+    if (!doc.availability || doc.availability.length === 0) {
+      console.warn(
+        `⚠️  No availability data for ${doc.name}, skipping schedule`
+      );
+      continue;
+    }
+
+    for (const avail of doc.availability) {
+      const [startTime, endTime] = avail.slot.split(' - ');
+
+      for (const day of avail.days) {
+        await prisma.doctorSchedule.upsert({
+          where: {
+            doctorId_dayOfWeek_startTime: {
+              doctorId: doctor.id,
+              dayOfWeek: day,
+              startTime,
+            },
           },
-        },
-        update: {},
-        create: {
-          doctorId: doctor.id,
-          dayOfWeek: 1,
-          startTime,
-          endTime,
-        },
-      });
+          update: {},
+          create: {
+            doctorId: doctor.id,
+            dayOfWeek: day,
+            startTime,
+            endTime,
+            isAvailable: true,
+          },
+          update: {
+            isAvailable: true,
+          },
+        });
+      }
     }
 
     console.log(`✅ Seeded doctor: ${doc.name}`);

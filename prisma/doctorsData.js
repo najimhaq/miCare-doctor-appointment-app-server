@@ -1,4 +1,5 @@
 // backend - prisma/doctorsData.js
+const WEEKDAYS = [0, 1, 2, 3, 4]; // Sun-Thu
 export default {
   doctors: [
     {
@@ -6,7 +7,10 @@ export default {
       specialty: 'Cardiologist',
       image: 'https://i.ibb.co/doctor-demo1.jpg',
       experience: '12 years',
-      availability: ['09:00 AM - 12:00 PM', '05:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Highly experienced cardiologist specializing in heart diseases, preventive care, and patient-centered treatment.',
       hospital: 'Labaid Cardiac Hospital',
@@ -18,7 +22,10 @@ export default {
       specialty: 'Dermatologist',
       image: 'https://i.ibb.co/doctor-demo2.jpg',
       experience: '9 years',
-      availability: ['10:00 AM - 11:00 PM', '06:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Expert dermatologist with 8+ years of experience treating skin conditions, allergies, and cosmetic dermatology.',
       hospital: 'Square Hospital',
@@ -30,7 +37,10 @@ export default {
       specialty: 'Neurologist',
       image: 'https://i.ibb.co/doctor-demo3.jpg',
       experience: '15 years',
-      availability: ['08:00 AM - 12:00 PM', '06:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Board-certified neurologist specializing in brain disorders, stroke management, and neurodegenerative diseases.',
       hospital: 'Apollo Hospital',
@@ -42,7 +52,10 @@ export default {
       specialty: 'Orthopedic',
       image: 'https://i.ibb.co/doctor-demo4.jpg',
       experience: '17 years',
-      availability: ['10:00 AM - 13:00 PM', '04:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Skilled orthopedic surgeon with expertise in joint replacement, sports injuries, and spinal surgery.',
       hospital: 'United Hospital',
@@ -54,7 +67,10 @@ export default {
       specialty: 'Pediatrician',
       image: 'https://i.ibb.co/doctor-demo5.jpg',
       experience: '18 years',
-      availability: ['10:00 AM - 13:00 PM', '05:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Compassionate pediatrician dedicated to child health, developmental disorders, and preventive care.',
       hospital: 'Bangladesh Medical College Hospital',
@@ -66,7 +82,10 @@ export default {
       specialty: 'Psychiatrist',
       image: 'https://i.ibb.co/doctor-demo6.jpg',
       experience: '22 years',
-      availability: ['08:00 AM - 12:00 PM', '04:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Licensed psychiatrist providing mental health care, therapy, and medication management for various conditions.',
       hospital: 'Ibn Sina Hospital',
@@ -78,7 +97,10 @@ export default {
       specialty: 'General Physician',
       image: 'https://i.ibb.co/doctor-demo7.jpg',
       experience: '25 years',
-      availability: ['10:00 AM - 13:00 PM', '06:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'General physician with broad medical knowledge, offering comprehensive primary care and health screenings.',
       hospital: 'Popular Diagnostic Center',
@@ -90,7 +112,10 @@ export default {
       specialty: 'Dentist',
       image: 'https://i.ibb.co/doctor-demo8.jpg',
       experience: '6 years',
-      availability: ['08:00 AM - 13:00 PM', '06:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Experienced dentist specializing in cosmetic dentistry, orthodontics, and oral surgery.',
       hospital: 'Green Life Hospital',
@@ -102,7 +127,10 @@ export default {
       specialty: 'Gynecologist',
       image: 'https://i.ibb.co/doctor-demo9.jpg',
       experience: '24 years',
-      availability: ['08:00 AM - 13:00 PM', '04:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         "Renowned gynecologist providing women's health services, prenatal care, and reproductive health.",
       hospital: 'Holy Family Red Crescent Hospital',
@@ -114,7 +142,10 @@ export default {
       specialty: 'ENT Specialist',
       image: 'https://i.ibb.co/doctor-demo10.jpg',
       experience: '14 years',
-      availability: ['10:00 AM - 13:00 PM', '05:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'ENT specialist treating ear, nose, and throat conditions with advanced diagnostic techniques.',
       hospital: 'Birdem General Hospital',
@@ -126,7 +157,10 @@ export default {
       specialty: 'Urologist',
       image: 'https://i.ibb.co/doctor-demo11.jpg',
       experience: '9 years',
-      availability: ['10:00 AM - 11:00 PM', '04:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Urologist specializing in kidney stones, prostate health, and urinary tract disorders.',
       hospital: 'CMH Dhaka',
@@ -138,7 +172,10 @@ export default {
       specialty: 'Oncologist',
       image: 'https://i.ibb.co/doctor-demo12.jpg',
       experience: '24 years',
-      availability: ['08:00 AM - 11:00 PM', '04:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Oncologist dedicated to cancer diagnosis, chemotherapy, and personalized treatment plans.',
       hospital: 'Evercare Hospital',
@@ -150,7 +187,10 @@ export default {
       specialty: 'Nephrologist',
       image: 'https://i.ibb.co/doctor-demo13.jpg',
       experience: '20 years',
-      availability: ['08:00 AM - 12:00 PM', '06:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Nephrologist with expertise in kidney disease, dialysis, and transplant medicine.',
       hospital: 'BRB Hospital',
@@ -162,7 +202,10 @@ export default {
       specialty: 'Pulmonologist',
       image: 'https://i.ibb.co/doctor-demo14.jpg',
       experience: '12 years',
-      availability: ['08:00 AM - 12:00 PM', '06:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Pulmonologist treating respiratory diseases, asthma, COPD, and sleep disorders.',
       hospital: 'Khidmah Hospital',
@@ -174,7 +217,10 @@ export default {
       specialty: 'Endocrinologist',
       image: 'https://i.ibb.co/doctor-demo15.jpg',
       experience: '24 years',
-      availability: ['10:00 AM - 13:00 PM', '04:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Endocrinologist managing diabetes, thyroid disorders, and hormonal imbalances.',
       hospital: 'City Hospital',
@@ -186,7 +232,10 @@ export default {
       specialty: 'Gastroenterologist',
       image: 'https://i.ibb.co/doctor-demo16.jpg',
       experience: '3 years',
-      availability: ['10:00 AM - 11:00 PM', '06:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Gastroenterologist specializing in digestive disorders, liver disease, and endoscopic procedures.',
       hospital: 'Central Hospital',
@@ -198,7 +247,10 @@ export default {
       specialty: 'Ophthalmologist',
       image: 'https://i.ibb.co/doctor-demo17.jpg',
       experience: '7 years',
-      availability: ['09:00 AM - 12:00 PM', '04:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Ophthalmologist providing eye care, cataract surgery, and vision correction treatments.',
       hospital: 'Monowara Hospital',
@@ -210,7 +262,10 @@ export default {
       specialty: 'Rheumatologist',
       image: 'https://i.ibb.co/doctor-demo18.jpg',
       experience: '10 years',
-      availability: ['10:00 AM - 12:00 PM', '06:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Rheumatologist treating autoimmune diseases, arthritis, and connective tissue disorders.',
       hospital: 'Al-Rajhi Hospital',
@@ -222,7 +277,10 @@ export default {
       specialty: 'Hematologist',
       image: 'https://i.ibb.co/doctor-demo19.jpg',
       experience: '21 years',
-      availability: ['10:00 AM - 13:00 PM', '06:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Hematologist specializing in blood disorders, anemia, and clotting conditions.',
       hospital: 'Ispahani Islamia Eye Hospital',
@@ -234,7 +292,10 @@ export default {
       specialty: 'Radiologist',
       image: 'https://i.ibb.co/doctor-demo20.jpg',
       experience: '9 years',
-      availability: ['09:00 AM - 12:00 PM', '06:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Radiologist with expertise in medical imaging, MRI, CT scans, and diagnostic radiology.',
       hospital: 'National Institute of Cancer Research',
@@ -246,7 +307,10 @@ export default {
       specialty: 'Cardiologist',
       image: 'https://i.ibb.co/doctor-demo21.jpg',
       experience: '10 years',
-      availability: ['10:00 AM - 12:00 PM', '04:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Highly experienced cardiologist specializing in heart diseases, preventive care, and patient-centered treatment.',
       hospital: 'Labaid Cardiac Hospital',
@@ -258,7 +322,10 @@ export default {
       specialty: 'Dermatologist',
       image: 'https://i.ibb.co/doctor-demo22.jpg',
       experience: '16 years',
-      availability: ['08:00 AM - 13:00 PM', '05:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Expert dermatologist with 8+ years of experience treating skin conditions, allergies, and cosmetic dermatology.',
       hospital: 'Square Hospital',
@@ -270,7 +337,10 @@ export default {
       specialty: 'Neurologist',
       image: 'https://i.ibb.co/doctor-demo23.jpg',
       experience: '20 years',
-      availability: ['10:00 AM - 12:00 PM', '06:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Board-certified neurologist specializing in brain disorders, stroke management, and neurodegenerative diseases.',
       hospital: 'Apollo Hospital',
@@ -282,7 +352,10 @@ export default {
       specialty: 'Orthopedic',
       image: 'https://i.ibb.co/doctor-demo24.jpg',
       experience: '6 years',
-      availability: ['09:00 AM - 11:00 PM', '04:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Skilled orthopedic surgeon with expertise in joint replacement, sports injuries, and spinal surgery.',
       hospital: 'United Hospital',
@@ -294,7 +367,10 @@ export default {
       specialty: 'Pediatrician',
       image: 'https://i.ibb.co/doctor-demo25.jpg',
       experience: '20 years',
-      availability: ['08:00 AM - 11:00 PM', '05:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Compassionate pediatrician dedicated to child health, developmental disorders, and preventive care.',
       hospital: 'Bangladesh Medical College Hospital',
@@ -306,7 +382,10 @@ export default {
       specialty: 'Psychiatrist',
       image: 'https://i.ibb.co/doctor-demo26.jpg',
       experience: '22 years',
-      availability: ['09:00 AM - 11:00 PM', '06:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Licensed psychiatrist providing mental health care, therapy, and medication management for various conditions.',
       hospital: 'Ibn Sina Hospital',
@@ -318,7 +397,10 @@ export default {
       specialty: 'General Physician',
       image: 'https://i.ibb.co/doctor-demo27.jpg',
       experience: '24 years',
-      availability: ['10:00 AM - 13:00 PM', '06:00 PM - 08:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'General physician with broad medical knowledge, offering comprehensive primary care and health screenings.',
       hospital: 'Popular Diagnostic Center',
@@ -330,7 +412,10 @@ export default {
       specialty: 'Dentist',
       image: 'https://i.ibb.co/doctor-demo28.jpg',
       experience: '15 years',
-      availability: ['09:00 AM - 12:00 PM', '04:00 PM - 09:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'Experienced dentist specializing in cosmetic dentistry, orthodontics, and oral surgery.',
       hospital: 'Green Life Hospital',
@@ -342,7 +427,10 @@ export default {
       specialty: 'Gynecologist',
       image: 'https://i.ibb.co/doctor-demo29.jpg',
       experience: '22 years',
-      availability: ['08:00 AM - 13:00 PM', '05:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         "Renowned gynecologist providing women's health services, prenatal care, and reproductive health.",
       hospital: 'Holy Family Red Crescent Hospital',
@@ -354,7 +442,10 @@ export default {
       specialty: 'ENT Specialist',
       image: 'https://i.ibb.co/doctor-demo30.jpg',
       experience: '8 years',
-      availability: ['08:00 AM - 13:00 PM', '06:00 PM - 07:00 PM'],
+      availability: [
+        { days: WEEKDAYS, slot: '09:00 AM - 12:00 PM' },
+        { days: WEEKDAYS, slot: '05:00 PM - 08:00 PM' },
+      ],
       description:
         'ENT specialist treating ear, nose, and throat conditions with advanced diagnostic techniques.',
       hospital: 'Birdem General Hospital',
