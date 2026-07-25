@@ -1,10 +1,11 @@
 // middleware/auth.js
-import { auth } from '../lib/auth.js'; // আপনার betterAuth() instance যেখানে init করা
+import { auth } from '../lib/auth.js';
+import prisma from '../lib/prisma.js';
 
 export const requireAuth = async (req, res, next) => {
   try {
     const session = await auth.api.getSession({
-      headers: req.headers, 
+      headers: req.headers,
     });
 
     if (!session?.user) {
@@ -14,7 +15,23 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
-    req.user = session.user;
+    const fullUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        patientProfile: true,
+        doctorProfile: true,
+        adminProfile: true,
+      },
+    });
+
+    if (!fullUser) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    req.user = fullUser;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

@@ -6,51 +6,32 @@ datasource db {
   provider = "postgresql"
 }
 
-// ==================== CORE USER MODELS ====================
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  name          String?
-  image         String?
-  phone         String?
-  role          UserRole  @default(PATIENT)
-  status        UserStatus @default(PENDING)
-  isVerified    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  patientProfile   Patient?
-  doctorProfile    Doctor?
-  adminProfile     Admin?
-  accounts         Account[]
-  sessions         Session[]
-  notifications    Notification[]
-  reviewsGiven     Review[] @relation("Reviewer")
-  auditLogs        AuditLog[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  emailVerified  Boolean        @default(false)
+  name           String?
+  image          String?
+  phone          String?
+  role           UserRole       @default(PATIENT)
+  status         UserStatus     @default(PENDING)
+  isVerified     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  accounts       Account[]
+  adminProfile   Admin?
+  auditLogs      AuditLog[]
+  doctorProfile  Doctor?
+  notifications  Notification[]
+  patientProfile Patient?
+  reviewsGiven   Review[]       @relation("Reviewer")
+  sessions       Session[]
 
   @@map("users")
 }
 
-enum UserRole {
-  PATIENT
-  DOCTOR
-  ADMIN
-  SUPER_ADMIN
-}
-
-enum UserStatus {
-  ACTIVE
-  PENDING
-  SUSPENDED
-  BANNED
-}
-
-// Better-Auth required models
 model Account {
-  id                    String  @id @default(cuid())
+  id                    String    @id @default(cuid())
   userId                String
   accountId             String
   providerId            String
@@ -61,26 +42,24 @@ model Account {
   scope                 String?
   idToken               String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
   @@map("accounts")
 }
 
 model Session {
-  id             String   @id @default(cuid())
-  userId         String
-  token          String   @unique
-  expiresAt      DateTime
-  ipAddress      String?
-  userAgent      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -97,128 +76,211 @@ model Verification {
   @@map("verifications")
 }
 
-// ==================== PATIENT PROFILE ====================
-
 model Patient {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  dateOfBirth DateTime?
-  gender      Gender?
-  bloodGroup  String?
-  address     String?
-  city        String?
-  emergencyContactName   String?
-  emergencyContactPhone  String?
-  medicalHistory String?
-  allergies   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  appointments Appointment[] @relation("PatientAppointments")
-  payments     Payment[]
-  documents    Document[]
+  id                    String        @id @default(cuid())
+  userId                String        @unique
+  dateOfBirth           DateTime?
+  gender                Gender?
+  bloodGroup            String?
+  address               String?
+  city                  String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  medicalHistory        String?
+  allergies             String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  appointments          Appointment[] @relation("PatientAppointments")
+  documents             Document[]
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments              Payment[]
 
   @@map("patients")
 }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
-
-// ==================== DOCTOR PROFILE ====================
-
 model Doctor {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  licenseNumber   String   @unique
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  licenseNumber   String           @unique
   specialization  String
   qualifications  String?
-  experienceYears Int      @default(0)
-  about           String?  @db.Text
-  consultationFee Decimal  @default(0)
-  image           String?
-  hospital        String?
-  location        String?
-  rating          Float    @default(0)
-  totalReviews    Int      @default(0)
-  isApproved      Boolean  @default(false)
+  experienceYears Int              @default(0)
+  about           String?
+  consultationFee Decimal          @default(0)
+  rating          Float            @default(0)
+  totalReviews    Int              @default(0)
+  isApproved      Boolean          @default(false)
   approvedBy      String?
   approvedAt      DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  schedules     DoctorSchedule[]
-  appointments  Appointment[] @relation("DoctorAppointments")
-  reviews       Review[]      @relation("DoctorReviewed")
-  documents     Document[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  hospital        String?
+  image           String?
+  location        String?
+  appointments    Appointment[]    @relation("DoctorAppointments")
+  schedules       DoctorSchedule[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents       Document[]
+  reviews         Review[]         @relation("DoctorReviewed")
 
   @@map("doctors")
 }
 
-// Doctor Weekly Schedule (Recurring)
 model DoctorSchedule {
-  id              String   @id @default(cuid())
-  doctorId        String
-  dayOfWeek       Int      // 0=Sunday, 1=Monday...
-  startTime       String   // "09:00"
-  endTime         String   // "17:00"
-  slotDuration    Int      @default(30) // minutes
-  isAvailable     Boolean  @default(true)
-  maxPatientsPerSlot Int   @default(1)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(cuid())
+  doctorId           String
+  dayOfWeek          Int
+  startTime          String
+  endTime            String
+  slotDuration       Int      @default(30)
+  isAvailable        Boolean  @default(true)
+  maxPatientsPerSlot Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  doctor             Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@unique([doctorId, dayOfWeek, startTime])
   @@map("doctor_schedules")
 }
 
-// ==================== ADMIN PROFILE ====================
-
 model Admin {
-  id        String   @id @default(cuid())
-  userId    String   @unique
+  id          String   @id @default(cuid())
+  userId      String   @unique
   permissions String[] @default([])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("admins")
 }
-
-// ==================== APPOINTMENT SYSTEM ====================
 
 model Appointment {
   id              String            @id @default(cuid())
   patientId       String
   doctorId        String
   appointmentDate DateTime
-  startTime       String            // "10:00"
-  endTime         String            // "10:30"
+  startTime       String
+  endTime         String
   status          AppointmentStatus @default(PENDING)
   type            AppointmentType   @default(REGULAR)
   reason          String?
-  notes           String?           @db.Text
+  notes           String?
   isPaid          Boolean           @default(false)
   amount          Decimal?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  doctor          Doctor            @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+  patient         Patient           @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+  payment         Payment?
+  review          Review?
 
-  patient   Patient @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
-  doctor    Doctor  @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
-  payment   Payment?
-  review    Review?
-
-  @@unique([doctorId, appointmentDate, startTime, patientId]) // Prevent double booking
+  @@unique([doctorId, appointmentDate, startTime, patientId])
   @@index([doctorId, appointmentDate])
   @@index([patientId, appointmentDate])
   @@map("appointments")
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  reviewerId    String
+  doctorId      String
+  rating        Int
+  comment       String?
+  isAnonymous   Boolean     @default(false)
+  isVerified    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  doctor        Doctor      @relation("DoctorReviewed", fields: [doctorId], references: [id])
+  reviewer      User        @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  @@map("reviews")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique
+  patientId     String
+  amount        Decimal
+  status        PaymentStatus @default(PENDING)
+  method        String?
+  transactionId String?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id])
+  patient       Patient       @relation(fields: [patientId], references: [id])
+
+  @@map("payments")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(GENERAL)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  patientId  String?
+  doctorId   String?
+  title      String
+  fileUrl    String
+  fileType   String
+  uploadedBy String
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  doctor     Doctor?  @relation(fields: [doctorId], references: [id])
+  patient    Patient? @relation(fields: [patientId], references: [id])
+
+  @@map("documents")
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  BANNED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
 }
 
 enum AppointmentStatus {
@@ -238,47 +300,6 @@ enum AppointmentType {
   VIDEO_CONSULTATION
 }
 
-// ==================== REVIEWS & RATINGS ====================
-
-model Review {
-  id          String   @id @default(cuid())
-  appointmentId String @unique
-  reviewerId  String
-  doctorId    String
-  rating      Int      // 1-5
-  comment     String?  @db.Text
-  isAnonymous Boolean  @default(false)
-  isVerified  Boolean  @default(false) // Only verified after completed appointment
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  reviewer    User        @relation("Reviewer", fields: [reviewerId], references: [id])
-  doctor      Doctor      @relation("DoctorReviewed", fields: [doctorId], references: [id])
-
-  @@map("reviews")
-}
-
-// ==================== PAYMENTS ====================
-
-model Payment {
-  id            String        @id @default(cuid())
-  appointmentId String        @unique
-  patientId     String
-  amount        Decimal
-  status        PaymentStatus @default(PENDING)
-  method        String?
-  transactionId String?
-  paidAt        DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  appointment Appointment @relation(fields: [appointmentId], references: [id])
-  patient     Patient     @relation(fields: [patientId], references: [id])
-
-  @@map("payments")
-}
-
 enum PaymentStatus {
   PENDING
   COMPLETED
@@ -287,67 +308,10 @@ enum PaymentStatus {
   PARTIAL
 }
 
-// ==================== NOTIFICATIONS ====================
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  title     String
-  message   String
-  type      NotificationType @default(GENERAL)
-  isRead    Boolean  @default(false)
-  link      String?
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-  @@map("notifications")
-}
-
 enum NotificationType {
   APPOINTMENT
   PAYMENT
   SYSTEM
   GENERAL
   REMINDER
-}
-
-// ==================== AUDIT LOGS (Security) ====================
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  action    String
-  resource  String
-  details   Json?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id])
-
-  @@index([userId, createdAt])
-  @@index([action, createdAt])
-  @@map("audit_logs")
-}
-
-// ==================== DOCUMENTS ====================
-
-model Document {
-  id          String   @id @default(cuid())
-  patientId   String?
-  doctorId    String?
-  title       String
-  fileUrl     String
-  fileType    String
-  uploadedBy  String
-  isVerified  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  patient Patient? @relation(fields: [patientId], references: [id])
-  doctor  Doctor?  @relation(fields: [doctorId], references: [id])
-
-  @@map("documents")
 }

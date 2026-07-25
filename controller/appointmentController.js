@@ -102,3 +102,12 @@ export const bookAppointment = asyncHandler(async (req, res) => {
       .json({ success: false, message: 'Failed to book appointment' });
   }
 });
+
+export async function getMyAppointments(req, res) {
+  const appointments = await prisma.appointment.findMany({
+    where: { patientId: req.user.patientProfile.id },
+    include: { doctor: { include: { user: true } } },
+    orderBy: { appointmentDate: 'desc' }, // ✅ date → appointmentDate
+  });
+  res.json({ appointments });
+}

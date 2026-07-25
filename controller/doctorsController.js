@@ -24,7 +24,10 @@ export const getDoctors = asyncHandler(async (req, res) => {
   const [doctors, total] = await prisma.$transaction([
     prisma.doctor.findMany({
       where,
-      include: { user: { select: { name: true, email: true, image: true } }, schedules: true },
+      include: {
+        user: { select: { name: true, email: true, image: true } },
+        schedules: true,
+      },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
