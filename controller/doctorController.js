@@ -139,3 +139,80 @@ export const upsertDoctorProfile = asyncHandler(async (req, res) => {
     throw err;
   }
 });
+
+// GET /api/doctor/patients
+export const getDoctorPatients = asyncHandler(async (req, res) => {
+  const doctorProfile = req.user.doctorProfile;
+
+  if (!doctorProfile) {
+    return res.status(403).json({
+      success: false,
+      message: 'Doctor profile not found. Please complete your profile first.',
+    });
+  }
+
+  const doctorId = doctorProfile.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || '';
+
+  const appointments = await prisma.appointment.findMany({
+    where: { doctorId },
+    select: { patientId: true },
+    distinct: ['patientId'],
+  });
+  const patientIds = appointments.map((a) => a.patientId);
+
+  const where = {
+    id: { in: patientIds },
+    ...(search && {
+      user: { name: { contains: search, mode: 'insensitive' } },
+    }),
+  };
+
+  const [patients, total] = await prisma.$transaction([
+    prisma.patient.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, email: true, image: true, phone: true } },
+        appointments: {
+          where: { doctorId },
+          orderBy: { appointmentDate: 'desc' },
+          take: 1,
+          select: { appointmentDate: true, status: true },
+        },
+        _count: {
+          select: { appointments: { where: { doctorId } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.patient.count({ where }),
+  ]);
+
+  const formatted = patients.map((p) => ({
+    id: p.id,
+    name: p.user?.name,
+    email: p.user?.email,
+    phone: p.user?.phone,
+    image: p.user?.image,
+    gender: p.gender,
+    bloodGroup: p.bloodGroup,
+    totalVisits: p._count.appointments,
+    lastVisit: p.appointments[0]?.appointmentDate || null,
+    lastStatus: p.appointments[0]?.status || null,
+  }));
+
+  res.status(200).json({
+    success: true,
+    data: formatted,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});

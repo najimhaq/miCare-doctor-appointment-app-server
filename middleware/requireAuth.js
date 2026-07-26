@@ -59,12 +59,38 @@ export const requireDoctor = async (req, res, next) => {
   next();
 };
 
-export const requirePatient = async (req, res, next) => {
-  if (!req.user?.patientProfile) {
-    return res.status(403).json({
+// export const requirePatient = async (req, res, next) => {
+//   if (!req.user?.patientProfile) {
+//     return res.status(403).json({
+//       success: false,
+//       message: 'Access denied - Patient account required',
+//     });
+//   }
+//   next();
+// };
+
+// backend - middleware/requirePatient.js
+export const requirePatient = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
       success: false,
-      message: 'Access denied - Patient account required',
+      message: 'Unauthorized - Please login',
     });
   }
+
+  if (req.user.role !== 'PATIENT') {
+    return res.status(403).json({
+      success: false,
+      message: 'Only patients can book appointments',
+    });
+  }
+
+  if (!req.user.patientProfile) {
+    return res.status(403).json({
+      success: false,
+      message: 'Please complete your patient profile before booking an appointment',
+    });
+  }
+
   next();
 };
