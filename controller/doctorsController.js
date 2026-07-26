@@ -1,4 +1,4 @@
-// controllers/doctorController.js
+// controllers/doctorsController.js
 import prisma from '../lib/prisma.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
@@ -50,7 +50,6 @@ export const getDoctors = asyncHandler(async (req, res) => {
 });
 
 // Get single doctor by ID
-// controllers/doctorController.js
 export const getDoctorById = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
@@ -168,40 +167,6 @@ export const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({ success: true, data: slots });
-});
-
-// Get doctor profile
-export const getDoctorProfile = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const doctor = await prisma.doctor.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-          image: true,
-          status: true,
-          isVerified: true,
-        },
-      },
-      schedules: true,
-      reviews: {
-        include: { reviewer: { select: { name: true, image: true } } },
-      },
-      documents: true,
-    },
-  });
-
-  if (!doctor) {
-    return res
-      .status(404)
-      .json({ success: false, message: 'Doctor not found' });
-  }
-
-  res.status(200).json({ success: true, data: doctor });
 });
 
 // Get all specialties

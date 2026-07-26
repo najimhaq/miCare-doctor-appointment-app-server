@@ -543,3 +543,79 @@ export const updateAppointmentStatus = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, message: 'Status updated', data: updated });
 });
+
+// controller/appointmentController.js এ যুক্ত করুন
+export const getDoctorDashboardStats = asyncHandler(async (req, res) => {
+  if (!req.user?.doctorProfile) {
+    return res.status(403).json({
+      success: false,
+      message: 'Doctor profile not found. Please complete your profile first.',
+    });
+  }
+
+  const doctorId = req.user.doctorProfile.id;
+
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+
+  const [
+    todayAppointments,
+    totalPatients,
+    pendingCount,
+    confirmedCount,
+    completedThisWeek,
+    upcomingAppointments,
+  ] = await Promise.all([
+    prisma.appointment.findMany({
+      where: {
+        doctorId,
+        appointmentDate: { gte: todayStart, lte: todayEnd },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      include: { patient: { include: { user: { select: { name: true, image: true } } } } },
+      orderBy: { startTime: 'asc' },
+    }),
+    prisma.appointment.findMany({
+      where: { doctorId },
+      distinct: ['patientId'],
+      select: { patientId: true },
+    }),
+    prisma.appointment.count({ where: { doctorId, status: 'PENDING' } }),
+    prisma.appointment.count({ where: { doctorId, status: 'CONFIRMED' } }),
+    prisma.appointment.count({
+      where: { doctorId, status: 'COMPLETED', appointmentDate: { gte: weekStart } },
+    }),
+    prisma.appointment.findMany({
+      where: {
+        doctorId,
+        appointmentDate: { gt: todayEnd },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      include: { patient: { include: { user: { select: { name: true, image: true } } } } },
+      orderBy: { appointmentDate: 'asc' },
+      take: 5,
+    }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      todayAppointments,
+      upcomingAppointments,
+      stats: {
+        totalPatients: totalPatients.length,
+        pendingCount,
+        confirmedCount,
+        completedThisWeek,
+        todayCount: todayAppointments.length,
+      },
+    },
+  });
+});

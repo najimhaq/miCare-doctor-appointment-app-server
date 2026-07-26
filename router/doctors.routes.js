@@ -1,6 +1,6 @@
+// backend - router/doctors.routes.js
 import express from 'express';
-
-const doctorRouter = express.Router();
+const doctorsRouter = express.Router();
 
 import {
   getDoctors,
@@ -8,11 +8,11 @@ import {
   getDoctorSpecialties,
   getDoctorAvailableSlots,
 } from '../controller/doctorsController.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 
-doctorRouter.get('/specialties', getDoctorSpecialties);
-doctorRouter.get('/:id/available-slots', getDoctorAvailableSlots);
-doctorRouter.get('/', getDoctors);
-doctorRouter.get('/:id', getDoctorById);
+doctorsRouter.get('/specialties', getDoctorSpecialties);
+doctorsRouter.get('/:id/available-slots', getDoctorAvailableSlots);
+doctorsRouter.get('/', getDoctors);
+doctorsRouter.get('/:id', getDoctorById);
 
-
-export default doctorRouter;
+export default doctorsRouter;

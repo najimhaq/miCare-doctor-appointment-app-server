@@ -5,12 +5,15 @@ import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
-import uploadRouter from './router/upload.routes.js';
-import doctorRouter from './router/doctors.routes.js';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import { requireAuth } from './middleware/requireAuth.js';
+import authRouter from './router/auth.routes.js';
+import uploadRouter from './router/upload.routes.js';
+import doctorsRouter from './router/doctors.routes.js';
 import appointmentRoutes from './router/appointmentRoutes.js';
+import doctorRouter from './router/doctor.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -30,12 +33,14 @@ app.use(compression());
 const corsOptions = {
   origin: process.env.NEXT_PUBLIC_API_FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   exposedHeaders: ['Set-Cookie'],
   maxAge: 86400, // 24 hours
 };
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ✅ Rate Limiting (প্রোডাকশনে জরুরি)
 const limiter = rateLimit({
@@ -48,10 +53,10 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // ✅ Better Auth
+app.use('/api/auth', authRouter);
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 app.get('/', (req, res) => {
   res.json({
@@ -66,7 +71,8 @@ app.get('/', (req, res) => {
 // Custom routes
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/upload', uploadRouter);
-app.use('/api/all-doctors', doctorRouter);
+app.use('/api/all-doctors', doctorsRouter);
+app.use('/api/doctor', doctorRouter);
 
 app.use((req, res) => {
   res.status(404).json({
